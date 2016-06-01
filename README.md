@@ -1,2 +1,2 @@
 # psychotron
-Sentry bot project.
+Arduino sentry bot project.
