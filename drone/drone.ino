@@ -3,43 +3,41 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
-
-void Forward();
-void Right();
-void Backwards();
-void Stop();
-void Left();
+const int FWD_LEFT = 2;
+const int FWD_RIGHT = 5;
+const int BACK_LEFT = 3;
+const int BACK_RIGHT = 4;
 
 void Forward() {
     Serial.println("Forward");
-    digitalWrite(2,1);
-    digitalWrite(5,1);
+    digitalWrite(FWD_LEFT,HIGH);
+    digitalWrite(FWD_RIGHT,HIGH);
 }
 
 void Right() {
     Serial.println("Right");
-    digitalWrite(3,1);
-    digitalWrite(5,1);
+    digitalWrite(BACK_LEFT,HIGH);
+    digitalWrite(FWD_RIGHT,HIGH);
 }
 
 void Backwards() {
     Serial.println("Backwards");
-    digitalWrite(3,1);
-    digitalWrite(4,1);
+    digitalWrite(BACK_LEFT,HIGH);
+    digitalWrite(BACK_RIGHT,HIGH);
 }
 
 void Left() {
     Serial.println("Left");
-    digitalWrite(2,1);
-    digitalWrite(4,1);
+    digitalWrite(FWD_LEFT,HIGH);
+    digitalWrite(BACK_RIGHT,HIGH);
 }
 
 void Stop() {
     Serial.println("Stop");
-    digitalWrite(2,0);
-    digitalWrite(3,0);
-    digitalWrite(4,0);
-    digitalWrite(5,0);
+    digitalWrite(FWD_LEFT,LOW);
+    digitalWrite(BACK_LEFT,LOW);
+    digitalWrite(BACK_RIGHT,LOW);
+    digitalWrite(FWD_RIGHT,LOW);
 }
 
 float getDistance(int trig,int echo){
@@ -50,49 +48,6 @@ float getDistance(int trig,int echo){
     delayMicroseconds(10);
     pinMode(echo, INPUT);
     return pulseIn(echo,HIGH,30000)/58.0;
-}
-
-int action = 0;
-
-void roam() {
-    Serial.println("Roam");
-
-    while(true) {
-        ledOff();
-        readAction();
-        if(action == 8) 
-          break;
-        
-        clearBuffer();
-
-        readAction();
-        if(action == 8) 
-          break;
-        
-        delay(1000*0.1);
-
-        readAction();
-        if(action == 8) 
-          break;
-        
-        if(getDistance(10,9) > 25){
-            Forward();
-        }
-        else {
-            ledOn();
-            Stop();
-            if(random(0,1) == 1){
-                Right();
-                delay(1000*(3) / (random(1,6)));
-            }
-            else {
-                Left();
-                delay(1000*(3) / (random(1,6)));
-            }
-            Stop();
-        }
-    }    
-    Stop();
 }
 
 void clearBuffer() {
@@ -110,34 +65,40 @@ void ledOff() {
 }
 
 String raw = "";
+int action = 0;
+int exTime = 0;
 
 void readAction() {
     Serial.print("ReadAction: ");
 
     if (Serial.available() > 0) {
 
-        raw = Serial.readStringUntil('#');
+        raw = Serial.readStringUntil(';');
         Serial.println(raw);
 
         if(raw.length() > 2) {
             action = raw.substring(2,3).toInt();
             Serial.println(action);
         }
+        if(raw.length() > 3) {
+            exTime = raw.substring(3, raw.length()).toInt();
+            Serial.println(exTime);
+        }
     }
 }
 
 void setup() {
-    pinMode(2,OUTPUT);
-    pinMode(5,OUTPUT);
-    pinMode(3,OUTPUT);
-    pinMode(4,OUTPUT);
-    Serial.begin(9600);         
+    pinMode(FWD_LEFT, OUTPUT);
+    pinMode(FWD_RIGHT, OUTPUT);
+    pinMode(BACK_LEFT, OUTPUT);
+    pinMode(BACK_RIGHT, OUTPUT);
+    Serial.begin(9600);
 }
 
 void loop() {
     readAction();
     if(action > -1) {
-        switch(action) {    
+        switch(action) {
             case 0:
                 Stop();
                 break;
@@ -152,13 +113,12 @@ void loop() {
                 break;
             case 4:
                 Right();
-                break; 
-            case 7:
-                roam();
-                break;     
+                break;
             default:
-                Stop();  
+                Stop();
                 break;
         }
     }
+    if(exTime > 0)
+      delayMicroseconds(exTime * 1000);
 }
