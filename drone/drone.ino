@@ -12,31 +12,26 @@ const int TRIG = 10;
 const int ECHO = 9;
 
 void forward() {
-    Serial.println("Forward");
     digitalWrite(FWD_LEFT,HIGH);
     digitalWrite(FWD_RIGHT,HIGH);
 }
 
 void right() {
-    Serial.println("Right");
     digitalWrite(BACK_LEFT,HIGH);
     digitalWrite(FWD_RIGHT,HIGH);
 }
 
 void backwards() {
-    Serial.println("Backwards");
     digitalWrite(BACK_LEFT,HIGH);
     digitalWrite(BACK_RIGHT,HIGH);
 }
 
 void left() {
-    Serial.println("Left");
     digitalWrite(FWD_LEFT,HIGH);
     digitalWrite(BACK_RIGHT,HIGH);
 }
 
 void stop() {
-    Serial.println("Stop");
     digitalWrite(FWD_LEFT,LOW);
     digitalWrite(BACK_LEFT,LOW);
     digitalWrite(BACK_RIGHT,LOW);
@@ -72,20 +67,13 @@ int action = 0;
 int exTime = 0;
 
 void readAction() {
-    Serial.print("ReadAction: ");
-
     if (Serial.available() > 0) {
-
         raw = Serial.readStringUntil(';');
-        Serial.println(raw);
-
         if(raw.length() > 2) {
             action = raw.substring(2,3).toInt();
-            Serial.println(action);
         }
         if(raw.length() > 3) {
             exTime = raw.substring(3, raw.length()).toInt();
-            Serial.println(exTime);
         }
     }
 }
@@ -133,4 +121,5 @@ void loop() {
     }
     if(exTime > 0)
       delayMicroseconds(exTime * 1000);
+    action = 0;
 }
