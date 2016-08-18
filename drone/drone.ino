@@ -7,6 +7,8 @@ const int FWD_LEFT = 2;
 const int FWD_RIGHT = 5;
 const int BACK_LEFT = 3;
 const int BACK_RIGHT = 4;
+const int LED = 13;
+
 
 void Forward() {
     Serial.println("Forward");
@@ -57,11 +59,11 @@ void clearBuffer() {
 }
 
 void ledOn() {
-    digitalWrite(13,1);
+    digitalWrite(LED,1);
 }
 
 void ledOff() {
-    digitalWrite(13,0);
+    digitalWrite(LED,0);
 }
 
 String raw = "";
@@ -114,6 +116,14 @@ void loop() {
             case 4:
                 Right();
                 break;
+            case 5:
+                ledOn();
+                break;
+            case 6:
+                ledOff();
+                break;
+            case 7:
+                Serial.println(getDistance());
             default:
                 Stop();
                 break;
