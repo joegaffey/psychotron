@@ -8,33 +8,34 @@ const int FWD_RIGHT = 5;
 const int BACK_LEFT = 3;
 const int BACK_RIGHT = 4;
 const int LED = 13;
+const int TRIG = 10;
+const int ECHO = 9;
 
-
-void Forward() {
+void forward() {
     Serial.println("Forward");
     digitalWrite(FWD_LEFT,HIGH);
     digitalWrite(FWD_RIGHT,HIGH);
 }
 
-void Right() {
+void right() {
     Serial.println("Right");
     digitalWrite(BACK_LEFT,HIGH);
     digitalWrite(FWD_RIGHT,HIGH);
 }
 
-void Backwards() {
+void backwards() {
     Serial.println("Backwards");
     digitalWrite(BACK_LEFT,HIGH);
     digitalWrite(BACK_RIGHT,HIGH);
 }
 
-void Left() {
+void left() {
     Serial.println("Left");
     digitalWrite(FWD_LEFT,HIGH);
     digitalWrite(BACK_RIGHT,HIGH);
 }
 
-void Stop() {
+void stop() {
     Serial.println("Stop");
     digitalWrite(FWD_LEFT,LOW);
     digitalWrite(BACK_LEFT,LOW);
@@ -42,14 +43,14 @@ void Stop() {
     digitalWrite(FWD_RIGHT,LOW);
 }
 
-float getDistance(int trig,int echo){
-    pinMode(trig,OUTPUT);
-    digitalWrite(trig,LOW);
+float getDistance() {
+    pinMode(TRIG, OUTPUT);
+    digitalWrite(TRIG, LOW);
     delayMicroseconds(2);
-    digitalWrite(trig,HIGH);
+    digitalWrite(TRIG, HIGH);
     delayMicroseconds(10);
-    pinMode(echo, INPUT);
-    return pulseIn(echo,HIGH,30000)/58.0;
+    pinMode(ECHO, INPUT);
+    return pulseIn(ECHO, HIGH, 30000)/58.0;
 }
 
 void clearBuffer() {
@@ -102,19 +103,19 @@ void loop() {
     if(action > -1) {
         switch(action) {
             case 0:
-                Stop();
+                stop();
                 break;
             case 1:
-                Forward();
+                forward();
                 break;
             case 2:
-                Backwards();
+                backwards();
                 break;
             case 3:
-                Left();
+                left();
                 break;
             case 4:
-                Right();
+                right();
                 break;
             case 5:
                 ledOn();
@@ -124,8 +125,9 @@ void loop() {
                 break;
             case 7:
                 Serial.println(getDistance());
+                break;
             default:
-                Stop();
+                stop();
                 break;
         }
     }
