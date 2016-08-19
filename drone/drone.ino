@@ -12,30 +12,30 @@ const int TRIG = 10;
 const int ECHO = 9;
 
 void forward() {
-    digitalWrite(FWD_LEFT,HIGH);
-    digitalWrite(FWD_RIGHT,HIGH);
+    digitalWrite(FWD_LEFT, HIGH);
+    digitalWrite(FWD_RIGHT, HIGH);
 }
 
 void right() {
-    digitalWrite(BACK_LEFT,HIGH);
-    digitalWrite(FWD_RIGHT,HIGH);
+    digitalWrite(BACK_LEFT, HIGH);
+    digitalWrite(FWD_RIGHT, HIGH);
 }
 
 void backwards() {
-    digitalWrite(BACK_LEFT,HIGH);
-    digitalWrite(BACK_RIGHT,HIGH);
+    digitalWrite(BACK_LEFT, HIGH);
+    digitalWrite(BACK_RIGHT, HIGH);
 }
 
 void left() {
-    digitalWrite(FWD_LEFT,HIGH);
-    digitalWrite(BACK_RIGHT,HIGH);
+    digitalWrite(FWD_LEFT, HIGH);
+    digitalWrite(BACK_RIGHT, HIGH);
 }
 
-void stop() {
-    digitalWrite(FWD_LEFT,LOW);
-    digitalWrite(BACK_LEFT,LOW);
-    digitalWrite(BACK_RIGHT,LOW);
-    digitalWrite(FWD_RIGHT,LOW);
+void stopRobot() {
+    digitalWrite(FWD_LEFT, LOW);
+    digitalWrite(BACK_LEFT, LOW);
+    digitalWrite(BACK_RIGHT, LOW);
+    digitalWrite(FWD_RIGHT, LOW);
 }
 
 float getDistance() {
@@ -48,23 +48,17 @@ float getDistance() {
     return pulseIn(ECHO, HIGH, 30000)/58.0;
 }
 
-void clearBuffer() {
-    while (Serial.available() > 0) {
-        Serial.read();
-    }
-}
-
 void ledOn() {
-    digitalWrite(LED,1);
+    digitalWrite(LED, HIGH);
 }
 
 void ledOff() {
-    digitalWrite(LED,0);
+    digitalWrite(LED, LOW);
 }
 
 String raw = "";
-int action = 0;
-int exTime = 0;
+int action = -1;
+int exTime = 50;
 
 void readAction() {
     if (Serial.available() > 0) {
@@ -76,6 +70,8 @@ void readAction() {
             exTime = raw.substring(3, raw.length()).toInt();
         }
     }
+    else
+      action = -1;
 }
 
 void setup() {
@@ -83,7 +79,8 @@ void setup() {
     pinMode(FWD_RIGHT, OUTPUT);
     pinMode(BACK_LEFT, OUTPUT);
     pinMode(BACK_RIGHT, OUTPUT);
-    Serial.begin(9600);
+    pinMode(LED, OUTPUT);
+    Serial.begin(115200);
 }
 
 void loop() {
@@ -91,7 +88,7 @@ void loop() {
     if(action > -1) {
         switch(action) {
             case 0:
-                stop();
+                stopRobot();
                 break;
             case 1:
                 forward();
@@ -115,11 +112,11 @@ void loop() {
                 Serial.println(getDistance());
                 break;
             default:
-                stop();
                 break;
         }
+        Serial.println("OK");
     }
-    if(exTime > 0)
-      delayMicroseconds(exTime * 1000);
-    action = 0;
+    delay(exTime);
+    exTime = 50;
+    action = -1;    
 }
