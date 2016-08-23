@@ -108,14 +108,11 @@ void loop() {
             case 6:
                 ledOff();
                 break;
-            case 7:
-                Serial.println(getDistance());
-                break;
             default:
                 break;
         }
-        Serial.println("OK");
     }
+    Serial.println(getDistance());
     delay(exTime);
     exTime = 50;
     action = -1;    
