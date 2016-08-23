@@ -11,6 +11,8 @@ const int LED = 13;
 const int TRIG = 10;
 const int ECHO = 9;
 
+int distance = -1;
+
 void forward() {
     digitalWrite(FWD_LEFT, HIGH);
     digitalWrite(FWD_RIGHT, HIGH);
@@ -83,6 +85,10 @@ void setup() {
     Serial.begin(115200);
 }
 
+void ping() {
+  Serial.println((int)getDistance());
+}
+
 void loop() {
     readAction();
     if(action > -1) {
@@ -108,11 +114,18 @@ void loop() {
             case 6:
                 ledOff();
                 break;
+            case 7:
+                ping();
+                break;
             default:
                 break;
         }
     }
-    Serial.println(getDistance());
+    int currDistance = (int)getDistance();
+    if(currDistance != distance) {
+      distance = currDistance;
+      Serial.println(distance);
+    }
     delay(exTime);
     exTime = 50;
     action = -1;    
