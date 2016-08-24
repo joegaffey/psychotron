@@ -11,7 +11,11 @@ const int LED = 13;
 const int TRIG = 10;
 const int ECHO = 9;
 
+const int MIN_DIST = 8;
+const int DEBUG = true;
+
 int distance = -1;
+bool running = true;
 
 void forward() {
     digitalWrite(FWD_LEFT, HIGH);
@@ -60,17 +64,10 @@ void ledOff() {
 
 String raw = "";
 int action = -1;
-int exTime = 50;
 
 void readAction() {
     if (Serial.available() > 0) {
-        raw = Serial.readStringUntil(';');
-        if(raw.length() > 2) {
-            action = raw.substring(2,3).toInt();
-        }
-        if(raw.length() > 3) {
-            exTime = raw.substring(3, raw.length()).toInt();
-        }
+      action = Serial.readStringUntil('\n').toInt();
     }
     else
       action = -1;
@@ -89,9 +86,23 @@ void ping() {
   Serial.println((int)getDistance());
 }
 
+void checkDistance() {
+  int currDistance = (int)getDistance();
+    if(currDistance != distance) {
+      distance = currDistance;
+      Serial.println(distance);
+      if(distance < MIN_DIST) {
+        stopRobot();
+        Serial.println(-1);
+        if(!DEBUG)
+          running = false;
+      }
+    }
+}
+
 void loop() {
     readAction();
-    if(action > -1) {
+    if(running && action > -1) {
         switch(action) {
             case 0:
                 stopRobot();
@@ -121,12 +132,6 @@ void loop() {
                 break;
         }
     }
-    int currDistance = (int)getDistance();
-    if(currDistance != distance) {
-      distance = currDistance;
-      Serial.println(distance);
-    }
-    delay(exTime);
-    exTime = 50;
+    checkDistance();
     action = -1;    
 }
