@@ -79,7 +79,7 @@ void setup() {
     pinMode(BACK_LEFT, OUTPUT);
     pinMode(BACK_RIGHT, OUTPUT);
     pinMode(LED, OUTPUT);
-    Serial.begin(115200);
+    Serial.begin(9600);
 }
 
 void ping() {
