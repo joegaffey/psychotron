@@ -88,7 +88,9 @@ void ping() {
 
 void checkDistance() {
   int currDistance = (int)getDistance();
-    if(currDistance != distance) {
+    if(currDistance == 0 || currDistance == 3) //Filter out false 0's and 3's ???
+      ;
+    else if(currDistance != distance) {
       distance = currDistance;
       Serial.println(distance);
       if(distance < MIN_DIST) {
@@ -97,7 +99,7 @@ void checkDistance() {
         if(!DEBUG)
           running = false;
       }
-    }
+   }
 }
 
 void loop() {
@@ -133,5 +135,6 @@ void loop() {
         }
     }
     checkDistance();
+    delay(100);
     action = -1;    
 }
