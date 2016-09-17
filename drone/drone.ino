@@ -15,7 +15,6 @@ const int ENA = 11;
 const int ENB = 12;
 const int LINE_SENSORS[] = {6, 7};
 
-
 /* Elegoo robot pins
 const int FRONT_LEFT = 2;
 const int FRONT_RIGHT = 5;
@@ -116,32 +115,32 @@ void ping() {
 
 void handleAction(int action) {
   switch(action) {
-      case 0:
-          stopRobot();
-          break;
-      case 1:
-          forward();
-          break;
-      case 2:
-          backwards();
-          break;
-      case 3:
-          left();
-          break;
-      case 4:
-          right();
-          break;
-      case 5:
-          ledOn();
-          break;
-      case 6:
-          ledOff();
-          break;
-      case 7:
-          ping();
-          break;
-      default:
-          break;
+    case 0:
+        stopRobot();
+        break;
+    case 1:
+        forward();
+        break;
+    case 2:
+        backwards();
+        break;
+    case 3:
+        left();
+        break;
+    case 4:
+        right();
+        break;
+    case 5:
+        ledOn();
+        break;
+    case 6:
+        ledOff();
+        break;
+    case 7:
+        ping();
+        break;
+    default:
+        break;
   }
 }
 
