@@ -4,20 +4,22 @@
 #include <SoftwareSerial.h>
 
 /* Lego robot pins */
-const int FRONT_LEFT = 2;
-const int FRONT_RIGHT = 5;
+const int FWD_LEFT = 2;
+const int FWD_RIGHT = 5;
 const int BACK_LEFT = 3;
 const int BACK_RIGHT = 4;
 const int LED = 13;
-const int TRIG = 10;
-const int ECHO = 9;
-const int ENA = 11;
-const int ENB = 12;
-const int LINE_SENSORS[] = {6, 7};
+const int TRIG = 8;
+const int ECHO = 7;
+const int ENA = 9;
+const int ENB = 10;
+//const int LINE_SENSORS = {11, 12};
+const int LINE_SENSOR_1 = 11;
+const int LINE_SENSOR_2 = 12;
 
 /* Elegoo robot pins
-const int FRONT_LEFT = 2;
-const int FRONT_RIGHT = 5;
+const int FWD_LEFT = 2;
+const int FWD_RIGHT = 5;
 const int BACK_LEFT = 3;
 const int BACK_RIGHT = 4;
 const int LED = 13;
@@ -28,8 +30,9 @@ const int[] LINE_SENSORS = {6, 7, 8};
 
 /* Misc settings */
 const int MINIMUM_DISTANCE = 8;
-const int DEBUG_MODE = false;
+const int DEBUG_MODE = true;
 const int SERIAL_PORT_SPEED = 9600;
+const int SPEED = 196;
 
 /* Serial messages */
 const int COLLISION_MESSAGE = -1;
@@ -40,59 +43,66 @@ int distance = -1;
 bool running = true;
 
 void forward() {
-  digitalWrite(ENA, HIGH);
-  digitalWrite(ENB, HIGH);
-  digitalWrite(FRONT_LEFT, HIGH);
-  digitalWrite(FRONT_RIGHT, HIGH);
+  analogWrite(ENA, SPEED);
+  analogWrite(ENB, SPEED);
+  digitalWrite(FWD_LEFT, HIGH);
+  digitalWrite(FWD_RIGHT, HIGH);
 }
 
 void right() {
-  digitalWrite(ENA, HIGH);
-  digitalWrite(ENB, HIGH);
+  analogWrite(ENA, SPEED);
+  analogWrite(ENB, SPEED);
   digitalWrite(BACK_LEFT, HIGH);
-  digitalWrite(FRONT_RIGHT, HIGH);
+  digitalWrite(FWD_RIGHT, HIGH);
 }
 
 void backwards() {
-  digitalWrite(ENA, HIGH);
-  digitalWrite(ENB, HIGH);
+  analogWrite(ENA, SPEED);
+  analogWrite(ENB, SPEED);
   digitalWrite(BACK_LEFT, HIGH);
   digitalWrite(BACK_RIGHT, HIGH);
 }
 
 void left() {
-  digitalWrite(ENA, HIGH);
-  digitalWrite(ENB, HIGH);
-  digitalWrite(FRONT_LEFT, HIGH);
+  analogWrite(ENA, SPEED);
+  analogWrite(ENB, SPEED);
+  digitalWrite(FWD_LEFT, HIGH);
   digitalWrite(BACK_RIGHT, HIGH);
 }
 
 void stopRobot() {
   digitalWrite(ENA, LOW);
   digitalWrite(ENB, LOW);
-  digitalWrite(FRONT_LEFT, LOW);
+  digitalWrite(FWD_LEFT, LOW);
   digitalWrite(BACK_LEFT, LOW);
   digitalWrite(BACK_RIGHT, LOW);
-  digitalWrite(FRONT_RIGHT, LOW);
+  digitalWrite(FWD_RIGHT, LOW);
 }
 
-float getDistance() {
+float getDistance() { 
   pinMode(TRIG, OUTPUT);
   digitalWrite(TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(TRIG, HIGH);
   delayMicroseconds(10);
   pinMode(ECHO, INPUT);
+  
   return pulseIn(ECHO, HIGH, 30000) / 58.0;
 }
 
 boolean lineDetected() {
-  for(int i = 0; i < sizeof(LINE_SENSORS); i++) {
-    if(digitalRead(LINE_SENSORS[i]) == HIGH)
+  if(digitalRead(LINE_SENSOR_1) == HIGH || digitalRead(LINE_SENSOR_2) == HIGH)
       return true;
-  }
   return false;
 }
+
+//boolean lineDetected() {
+//  for(int i = 0; i < sizeof(LINE_SENSORS); i++) {
+//    if(digitalRead(LINE_SENSORS[i]) == LOW)
+//      return true;
+//  }
+//  return false;
+//}
 
 void ledOn() {
   digitalWrite(LED, HIGH);
@@ -158,25 +168,31 @@ void handleLinedDetected() {
     running = false;
 }
 
-void setupLineSensors() {
-  for(int i = 0; i < sizeof(LINE_SENSORS); i++) {
-    pinMode(LINE_SENSORS[i], INPUT);
-  }
-}
+//void setupLineSensors() {
+//  Serial.println(">");
+//  Serial.println(sizeof(LINE_SENSORS));
+//  for(int i = 0; i < sizeof(LINE_SENSORS); i++) {
+//    pinMode(LINE_SENSORS[i], INPUT);
+//    Serial.println(digitalRead(LINE_SENSORS[i]));
+//  }
+//  Serial.println("<");
+//}
 
 void setup() {
+  Serial.begin(SERIAL_PORT_SPEED);
   pinMode(ENA, OUTPUT);
   pinMode(ENB, OUTPUT);
-  pinMode(FRONT_LEFT, OUTPUT);
-  pinMode(FRONT_RIGHT, OUTPUT);
+  pinMode(FWD_LEFT, OUTPUT);
+  pinMode(FWD_RIGHT, OUTPUT);
   pinMode(BACK_LEFT, OUTPUT);
   pinMode(BACK_RIGHT, OUTPUT);
   pinMode(LED, OUTPUT);
-  setupLineSensors();       
-  Serial.begin(SERIAL_PORT_SPEED);
+//  setupLineSensors();    
+  pinMode(LINE_SENSOR_1, INPUT);   
+  pinMode(LINE_SENSOR_2, INPUT);   
 }
 
-void loop() {
+void loop() {  
   int action = readActionFromSerial();
   if(running && action > -1) 
     handleAction(action);
@@ -191,7 +207,7 @@ void loop() {
       handleCollision();
   }   
   
-  if(lineDetected) {
+  if(lineDetected()) {
     handleLinedDetected();
   }
   
