@@ -13,33 +13,31 @@ const int TRIG = 8;
 const int ECHO = 7;
 const int ENA = 9;
 const int ENB = 10;
-//const int LINE_SENSORS = {11, 12};
 const int LINE_SENSOR_1 = 11;
 const int LINE_SENSOR_2 = 12;
 
-/* Elegoo robot pins
-const int FWD_LEFT = 2;
-const int FWD_RIGHT = 5;
-const int BACK_LEFT = 3;
-const int BACK_RIGHT = 4;
-const int LED = 13;
-const int TRIG = 10;
-const int ECHO = 9;
-const int[] LINE_SENSORS = {6, 7, 8};
-*/
+/* Robot actions in */
+const String ACTION_STOP = "STOP";
+const String ACTION_FWD = "FWD";
+const String ACTION_BACK = "BACK";
+const String ACTION_LEFT = "LEFT";
+const String ACTION_RIGHT = "RIGHT";
+const String ACTION_LEDON = "LEDON";
+const String ACTION_LEDOFF = "LEDOFF";
+const String ACTION_PING = "PING";
 
-/* Misc settings */
-const int MINIMUM_DISTANCE = 8;
-const int DEBUG_MODE = true;
-const int SERIAL_PORT_SPEED = 9600;
-const int SPEED = 196;
-
-/* Serial messages */
+/* Serial messages out*/
 const int COLLISION_MESSAGE = -1;
 const int LINE_DETECTED_MESSAGE = -2;
 
+/* Misc settings */
+const int MINIMUM_DISTANCE = 5;
+const int DEBUG_MODE = true;
+const int SERIAL_PORT_SPEED = 9600;
+const int SPEED = 128;
+
 /* Globals */
-int distance = -1;
+int distance = 999;
 bool running = true;
 
 void forward() {
@@ -91,18 +89,10 @@ float getDistance() {
 }
 
 boolean lineDetected() {
-  if(digitalRead(LINE_SENSOR_1) == HIGH || digitalRead(LINE_SENSOR_2) == HIGH)
+  if(digitalRead(LINE_SENSOR_1) == HIGH && digitalRead(LINE_SENSOR_2) == HIGH)
       return true;
   return false;
 }
-
-//boolean lineDetected() {
-//  for(int i = 0; i < sizeof(LINE_SENSORS); i++) {
-//    if(digitalRead(LINE_SENSORS[i]) == LOW)
-//      return true;
-//  }
-//  return false;
-//}
 
 void ledOn() {
   digitalWrite(LED, HIGH);
@@ -112,46 +102,34 @@ void ledOff() {
   digitalWrite(LED, LOW);
 }
 
-int readActionFromSerial() {
+String readActionFromSerial() {
   if (Serial.available() > 0) 
-    return Serial.readStringUntil('\n').toInt();
+    return Serial.readStringUntil('\n');
   else
-    return -1;
+    return "";
 }
 
 void ping() {
   Serial.println((int)getDistance());
 }
 
-void handleAction(int action) {
-  switch(action) {
-    case 0:
-        stopRobot();
-        break;
-    case 1:
-        forward();
-        break;
-    case 2:
-        backwards();
-        break;
-    case 3:
-        left();
-        break;
-    case 4:
-        right();
-        break;
-    case 5:
-        ledOn();
-        break;
-    case 6:
-        ledOff();
-        break;
-    case 7:
-        ping();
-        break;
-    default:
-        break;
-  }
+void handleAction(String action) {
+  if(action == ACTION_STOP)
+    stopRobot();
+  else if(action == ACTION_FWD)
+    forward();
+  else if(action == ACTION_BACK)
+    backwards();
+  else if(action == ACTION_LEFT)
+    left();
+  else if(action == ACTION_RIGHT)
+    right();
+  else if(action == ACTION_LEDON)
+    ledOn();
+  else if(action == ACTION_LEDOFF)
+    ledOff();
+  else if(action == ACTION_PING)
+    ping();
 }
 
 void handleCollision() {
@@ -168,16 +146,6 @@ void handleLinedDetected() {
     running = false;
 }
 
-//void setupLineSensors() {
-//  Serial.println(">");
-//  Serial.println(sizeof(LINE_SENSORS));
-//  for(int i = 0; i < sizeof(LINE_SENSORS); i++) {
-//    pinMode(LINE_SENSORS[i], INPUT);
-//    Serial.println(digitalRead(LINE_SENSORS[i]));
-//  }
-//  Serial.println("<");
-//}
-
 void setup() {
   Serial.begin(SERIAL_PORT_SPEED);
   pinMode(ENA, OUTPUT);
@@ -187,20 +155,16 @@ void setup() {
   pinMode(BACK_LEFT, OUTPUT);
   pinMode(BACK_RIGHT, OUTPUT);
   pinMode(LED, OUTPUT);
-//  setupLineSensors();    
   pinMode(LINE_SENSOR_1, INPUT);   
   pinMode(LINE_SENSOR_2, INPUT);   
 }
 
 void loop() {  
-  int action = readActionFromSerial();
-  if(running && action > -1) 
-    handleAction(action);
+  if(running) 
+    handleAction(readActionFromSerial());
   
   int tmpDistance = (int)getDistance();
-  if(tmpDistance == 0 || tmpDistance == 3) //Filter out false 0's and 3's - NB: replace that sensor!!! 
-    ;
-  else if(tmpDistance != distance && tmpDistance > 0) { //Only address changes in distance 
+  if(tmpDistance != distance && tmpDistance > 0) { //Only address changes in distance 
     distance = tmpDistance;
     Serial.println(distance);
     if(distance < MINIMUM_DISTANCE)
@@ -211,5 +175,5 @@ void loop() {
     handleLinedDetected();
   }
   
-  delay(100);
+  delay(50);
 }
