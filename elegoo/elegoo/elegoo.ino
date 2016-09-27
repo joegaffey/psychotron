@@ -4,17 +4,31 @@
 #include <SoftwareSerial.h>
 
 /* Lego robot pins */
-const int FWD_LEFT = 2;
-const int FWD_RIGHT = 5;
-const int BACK_LEFT = 3;
-const int BACK_RIGHT = 4;
+//const int FWD_LEFT = 2;
+//const int FWD_RIGHT = 5;
+//const int BACK_LEFT = 3;
+//const int BACK_RIGHT = 4;
+//const int LED = 13;
+//const int TRIG = 8;
+//const int ECHO = 7;
+//const int ENA = 9;
+//const int ENB = 10;
+//const int LINE_SENSOR_1 = 11;
+//const int LINE_SENSOR_2 = 12;
+
+/* Elegoo robot pins */
+const int FWD_LEFT = 6;
+const int FWD_RIGHT = 9;
+const int BACK_LEFT = 7;
+const int BACK_RIGHT = 8;
 const int LED = 13;
-const int TRIG = 8;
-const int ECHO = 7;
-const int ENA = 9;
+const int TRIG = A5;
+const int ECHO = A4;
+const int ENA = 5;
 const int ENB = 10;
-const int LINE_SENSOR_1 = 11;
-const int LINE_SENSOR_2 = 12;
+const int LINE_SENSOR_1 = 2;
+const int LINE_SENSOR_2 = 3;
+const int LINE_SENSOR_3 = 4;
 
 /* Robot actions in */
 const String ACTION_STOP = "STOP";
@@ -77,21 +91,28 @@ void stopRobot() {
   digitalWrite(FWD_RIGHT, LOW);
 }
 
-float getDistance() {
+float getDistance() { 
   pinMode(TRIG, OUTPUT);
   digitalWrite(TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(TRIG, HIGH);
   delayMicroseconds(10);
   pinMode(ECHO, INPUT);
-
+  
   return pulseIn(ECHO, HIGH, 30000) / 58.0;
 }
 
 boolean lineDetected() {
-  if(digitalRead(LINE_SENSOR_1) == HIGH && digitalRead(LINE_SENSOR_2) == HIGH)
-      return true;
-  return false;
+//  Serial.print(digitalRead(LINE_SENSOR_1)); 
+//  Serial.print(digitalRead(LINE_SENSOR_2));
+//  Serial.println(digitalRead(LINE_SENSOR_3));
+  
+  if( digitalRead(LINE_SENSOR_1) == HIGH && 
+//      digitalRead(LINE_SENSOR_2) == HIGH &&  //Faulty sensor
+      digitalRead(LINE_SENSOR_3) == HIGH)
+    return true;
+  else
+    return false;  
 }
 
 void ledOn() {
@@ -103,7 +124,7 @@ void ledOff() {
 }
 
 String readActionFromSerial() {
-  if (Serial.available() > 0)
+  if (Serial.available() > 0) 
     return Serial.readStringUntil('\n');
   else
     return "";
@@ -142,7 +163,7 @@ void handleCollision() {
 void handleLinedDetected() {
   stopRobot();
   Serial.println(LINE_DETECTED_MESSAGE);
-  if(!DEBUG_MODE)
+  if(!DEBUG_MODE) 
     running = false;
 }
 
@@ -155,25 +176,27 @@ void setup() {
   pinMode(BACK_LEFT, OUTPUT);
   pinMode(BACK_RIGHT, OUTPUT);
   pinMode(LED, OUTPUT);
-  pinMode(LINE_SENSOR_1, INPUT);
+  pinMode(LINE_SENSOR_1, INPUT);   
   pinMode(LINE_SENSOR_2, INPUT);
+  pinMode(LINE_SENSOR_3, INPUT);      
 }
 
-void loop() {
-  if(running)
-    handleAction(readActionFromSerial());
-
+void loop() {  
+  if(running) 
+    handleAction(readActionFromSerial());  
+    
   int tmpDistance = (int)getDistance();
-  if(tmpDistance != distance && tmpDistance > 0) { //Only address changes in distance
+  //Only send changes in distance 
+  if(tmpDistance != distance && tmpDistance > 0) { 
     distance = tmpDistance;
     Serial.println(distance);
     if(distance < MINIMUM_DISTANCE)
       handleCollision();
-  }
+  }   
 
   if(lineDetected()) {
     handleLinedDetected();
   }
-
-  delay(50);
+  
+  delay(100);
 }
