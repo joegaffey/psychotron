@@ -39,6 +39,7 @@ const String ACTION_RIGHT = "RIGHT";
 const String ACTION_LEDON = "LEDON";
 const String ACTION_LEDOFF = "LEDOFF";
 const String ACTION_PING = "PING";
+const String ACTION_SPEED = "SPEED";
 
 /* Serial messages out*/
 const int COLLISION_MESSAGE = -1;
@@ -48,38 +49,50 @@ const int LINE_DETECTED_MESSAGE = -2;
 const int MINIMUM_DISTANCE = 5;
 const int DEBUG_MODE = true;
 const int SERIAL_PORT_SPEED = 9600;
-const int SPEED = 128;
 
 /* Globals */
 int distance = 999;
 bool running = true;
+int speed = 128;
 
 void forward() {
-  analogWrite(ENA, SPEED);
-  analogWrite(ENB, SPEED);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
   digitalWrite(FWD_LEFT, HIGH);
   digitalWrite(FWD_RIGHT, HIGH);
+  digitalWrite(BACK_LEFT, LOW);
+  digitalWrite(BACK_RIGHT, LOW);
 }
 
 void right() {
-  analogWrite(ENA, SPEED);
-  analogWrite(ENB, SPEED);
+//  analogWrite(ENA, speed);
+//  analogWrite(ENB, speed);
+  digitalWrite(ENA, HIGH);
+  digitalWrite(ENB, HIGH);
   digitalWrite(BACK_LEFT, HIGH);
   digitalWrite(FWD_RIGHT, HIGH);
+  digitalWrite(FWD_LEFT, LOW);
+  digitalWrite(BACK_RIGHT, LOW);
 }
 
 void backwards() {
-  analogWrite(ENA, SPEED);
-  analogWrite(ENB, SPEED);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
   digitalWrite(BACK_LEFT, HIGH);
   digitalWrite(BACK_RIGHT, HIGH);
+  digitalWrite(FWD_LEFT, LOW);
+  digitalWrite(FWD_RIGHT, LOW);  
 }
 
 void left() {
-  analogWrite(ENA, SPEED);
-  analogWrite(ENB, SPEED);
+//  analogWrite(ENA, speed);
+//  analogWrite(ENB, speed);
+  digitalWrite(ENA, HIGH);
+  digitalWrite(ENB, HIGH);
   digitalWrite(FWD_LEFT, HIGH);
   digitalWrite(BACK_RIGHT, HIGH);
+  digitalWrite(BACK_LEFT, LOW);
+  digitalWrite(FWD_RIGHT, LOW);
 }
 
 void stopRobot() {
@@ -151,6 +164,10 @@ void handleAction(String action) {
     ledOff();
   else if(action == ACTION_PING)
     ping();
+  else if(action.substring(0, 5) == ACTION_SPEED) {
+    String speedStr = action.substring(6, action.length());
+    speed = speedStr.toInt(); 
+  }
 }
 
 void handleCollision() {
@@ -189,7 +206,7 @@ void loop() {
   //Only send changes in distance 
   if(tmpDistance != distance && tmpDistance > 0) { 
     distance = tmpDistance;
-    Serial.println(distance);
+    //Serial.println(distance);
     if(distance < MINIMUM_DISTANCE)
       handleCollision();
   }   
