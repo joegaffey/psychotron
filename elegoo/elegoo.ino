@@ -39,6 +39,7 @@ const String ACTION_RIGHT = "RIGHT";
 const String ACTION_LEDON = "LEDON";
 const String ACTION_LEDOFF = "LEDOFF";
 const String ACTION_PING = "PING";
+const String ACTION_RESET = "RESET";
 const String ACTION_SPEED = "SPEED";
 
 /* Serial messages out*/
@@ -47,7 +48,7 @@ const int LINE_DETECTED_MESSAGE = -2;
 
 /* Misc settings */
 const int MINIMUM_DISTANCE = 5;
-const int DEBUG_MODE = true;
+const int DEBUG_MODE = false;
 const int SERIAL_PORT_SPEED = 9600;
 
 /* Globals */
@@ -110,8 +111,7 @@ float getDistance() {
   delayMicroseconds(2);
   digitalWrite(TRIG, HIGH);
   delayMicroseconds(10);
-  pinMode(ECHO, INPUT);
-  
+  pinMode(ECHO, INPUT);  
   return pulseIn(ECHO, HIGH, 30000) / 58.0;
 }
 
@@ -134,6 +134,10 @@ void ledOn() {
 
 void ledOff() {
   digitalWrite(LED, LOW);
+}
+
+void reset() {
+  running = true;
 }
 
 String readActionFromSerial() {
@@ -199,14 +203,22 @@ void setup() {
 }
 
 void loop() {  
-  if(running) 
-    handleAction(readActionFromSerial());  
-    
+  delay(100);
+  String action = readActionFromSerial();
+  
+  if(!running) {
+    if(action == ACTION_RESET)
+      reset();  
+    else 
+      return;    
+  }
+  handleAction(action);  
+  
   int tmpDistance = (int)getDistance();
   //Only send changes in distance 
   if(tmpDistance != distance && tmpDistance > 0) { 
     distance = tmpDistance;
-    //Serial.println(distance);
+    Serial.println(distance);
     if(distance < MINIMUM_DISTANCE)
       handleCollision();
   }   
@@ -214,6 +226,4 @@ void loop() {
   if(lineDetected()) {
     handleLinedDetected();
   }
-  
-  delay(100);
 }
