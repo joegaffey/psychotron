@@ -3,7 +3,7 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
-/* Lego robot pins */
+/* Robot pins */
 const int FWD_LEFT = 2;
 const int FWD_RIGHT = 5;
 const int BACK_LEFT = 3;
@@ -25,6 +25,8 @@ const String ACTION_RIGHT = "RIGHT";
 const String ACTION_LEDON = "LEDON";
 const String ACTION_LEDOFF = "LEDOFF";
 const String ACTION_PING = "PING";
+const String ACTION_RESET = "RESET";
+const String ACTION_SPEED = "SPEED";
 
 /* Serial messages out*/
 const int COLLISION_MESSAGE = -1;
@@ -32,40 +34,48 @@ const int LINE_DETECTED_MESSAGE = -2;
 
 /* Misc settings */
 const int MINIMUM_DISTANCE = 5;
-const int DEBUG_MODE = true;
+const int DEBUG_MODE = false;
 const int SERIAL_PORT_SPEED = 9600;
-const int SPEED = 128;
 
 /* Globals */
 int distance = 999;
 bool running = true;
+int speed = 128;
 
 void forward() {
-  analogWrite(ENA, SPEED);
-  analogWrite(ENB, SPEED);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
   digitalWrite(FWD_LEFT, HIGH);
   digitalWrite(FWD_RIGHT, HIGH);
-}
-
-void right() {
-  analogWrite(ENA, SPEED);
-  analogWrite(ENB, SPEED);
-  digitalWrite(BACK_LEFT, HIGH);
-  digitalWrite(FWD_RIGHT, HIGH);
-}
-
-void backwards() {
-  analogWrite(ENA, SPEED);
-  analogWrite(ENB, SPEED);
-  digitalWrite(BACK_LEFT, HIGH);
-  digitalWrite(BACK_RIGHT, HIGH);
+  digitalWrite(BACK_LEFT, LOW);
+  digitalWrite(BACK_RIGHT, LOW);
 }
 
 void left() {
-  analogWrite(ENA, SPEED);
-  analogWrite(ENB, SPEED);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
+  digitalWrite(BACK_LEFT, HIGH);
+  digitalWrite(FWD_RIGHT, HIGH);
+  digitalWrite(FWD_LEFT, LOW);
+  digitalWrite(BACK_RIGHT, LOW);
+}
+
+void backwards() {
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
+  digitalWrite(BACK_LEFT, HIGH);
+  digitalWrite(BACK_RIGHT, HIGH);
+  digitalWrite(FWD_LEFT, LOW);
+  digitalWrite(FWD_RIGHT, LOW);  
+}
+
+void right() {
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
   digitalWrite(FWD_LEFT, HIGH);
   digitalWrite(BACK_RIGHT, HIGH);
+  digitalWrite(BACK_LEFT, LOW);
+  digitalWrite(FWD_RIGHT, LOW);
 }
 
 void stopRobot() {
@@ -84,7 +94,6 @@ float getDistance() {
   digitalWrite(TRIG, HIGH);
   delayMicroseconds(10);
   pinMode(ECHO, INPUT);
-
   return pulseIn(ECHO, HIGH, 30000) / 58.0;
 }
 
@@ -100,6 +109,10 @@ void ledOn() {
 
 void ledOff() {
   digitalWrite(LED, LOW);
+}
+
+void reset() {
+  running = true;
 }
 
 String readActionFromSerial() {
@@ -130,6 +143,10 @@ void handleAction(String action) {
     ledOff();
   else if(action == ACTION_PING)
     ping();
+  else if(action.substring(0, 5) == ACTION_SPEED) {
+    String speedStr = action.substring(6, action.length());
+    speed = speedStr.toInt(); 
+  }
 }
 
 void handleCollision() {
@@ -159,21 +176,27 @@ void setup() {
   pinMode(LINE_SENSOR_2, INPUT);
 }
 
-void loop() {
-  if(running)
-    handleAction(readActionFromSerial());
-
+void loop() {  
+  String action = readActionFromSerial();
+  
+  if(!running) {
+    if(action == ACTION_RESET)
+      reset();  
+    else 
+      return;    
+  }
+  handleAction(action);  
+  
   int tmpDistance = (int)getDistance();
-  if(tmpDistance != distance && tmpDistance > 0) { //Only address changes in distance
+  //Only send changes in distance 
+  if(tmpDistance != distance && tmpDistance > 0) { 
     distance = tmpDistance;
     Serial.println(distance);
     if(distance < MINIMUM_DISTANCE)
       handleCollision();
-  }
+  }   
 
   if(lineDetected()) {
     handleLinedDetected();
   }
-
-  delay(50);
 }

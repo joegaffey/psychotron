@@ -3,20 +3,7 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
-/* Lego robot pins */
-//const int FWD_LEFT = 2;
-//const int FWD_RIGHT = 5;
-//const int BACK_LEFT = 3;
-//const int BACK_RIGHT = 4;
-//const int LED = 13;
-//const int TRIG = 8;
-//const int ECHO = 7;
-//const int ENA = 9;
-//const int ENB = 10;
-//const int LINE_SENSOR_1 = 11;
-//const int LINE_SENSOR_2 = 12;
-
-/* Elegoo robot pins */
+/* Robot pins */
 const int FWD_LEFT = 6;
 const int FWD_RIGHT = 9;
 const int BACK_LEFT = 7;
@@ -65,7 +52,7 @@ void forward() {
   digitalWrite(BACK_RIGHT, LOW);
 }
 
-void right() {
+void left() {
 //  analogWrite(ENA, speed);
 //  analogWrite(ENB, speed);
   digitalWrite(ENA, HIGH);
@@ -85,7 +72,7 @@ void backwards() {
   digitalWrite(FWD_RIGHT, LOW);  
 }
 
-void left() {
+void right() {
 //  analogWrite(ENA, speed);
 //  analogWrite(ENB, speed);
   digitalWrite(ENA, HIGH);
@@ -203,7 +190,6 @@ void setup() {
 }
 
 void loop() {  
-  delay(100);
   String action = readActionFromSerial();
   
   if(!running) {
