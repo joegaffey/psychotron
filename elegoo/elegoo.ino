@@ -53,10 +53,8 @@ void forward() {
 }
 
 void left() {
-//  analogWrite(ENA, speed);
-//  analogWrite(ENB, speed);
-  digitalWrite(ENA, HIGH);
-  digitalWrite(ENB, HIGH);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
   digitalWrite(BACK_LEFT, HIGH);
   digitalWrite(FWD_RIGHT, HIGH);
   digitalWrite(FWD_LEFT, LOW);
@@ -69,14 +67,12 @@ void backwards() {
   digitalWrite(BACK_LEFT, HIGH);
   digitalWrite(BACK_RIGHT, HIGH);
   digitalWrite(FWD_LEFT, LOW);
-  digitalWrite(FWD_RIGHT, LOW);  
+  digitalWrite(FWD_RIGHT, LOW);
 }
 
 void right() {
-//  analogWrite(ENA, speed);
-//  analogWrite(ENB, speed);
-  digitalWrite(ENA, HIGH);
-  digitalWrite(ENB, HIGH);
+  analogWrite(ENA, speed);
+  analogWrite(ENB, speed);
   digitalWrite(FWD_LEFT, HIGH);
   digitalWrite(BACK_RIGHT, HIGH);
   digitalWrite(BACK_LEFT, LOW);
@@ -92,27 +88,27 @@ void stopRobot() {
   digitalWrite(FWD_RIGHT, LOW);
 }
 
-float getDistance() { 
+float getDistance() {
   pinMode(TRIG, OUTPUT);
   digitalWrite(TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(TRIG, HIGH);
   delayMicroseconds(10);
-  pinMode(ECHO, INPUT);  
+  pinMode(ECHO, INPUT);
   return pulseIn(ECHO, HIGH, 30000) / 58.0;
 }
 
 boolean lineDetected() {
-//  Serial.print(digitalRead(LINE_SENSOR_1)); 
+//  Serial.print(digitalRead(LINE_SENSOR_1));
 //  Serial.print(digitalRead(LINE_SENSOR_2));
 //  Serial.println(digitalRead(LINE_SENSOR_3));
-  
-  if( digitalRead(LINE_SENSOR_1) == HIGH && 
+
+  if( digitalRead(LINE_SENSOR_1) == HIGH &&
 //      digitalRead(LINE_SENSOR_2) == HIGH &&  //Faulty sensor
       digitalRead(LINE_SENSOR_3) == HIGH)
     return true;
   else
-    return false;  
+    return false;
 }
 
 void ledOn() {
@@ -128,7 +124,7 @@ void reset() {
 }
 
 String readActionFromSerial() {
-  if (Serial.available() > 0) 
+  if (Serial.available() > 0)
     return Serial.readStringUntil('\n');
   else
     return "";
@@ -157,7 +153,7 @@ void handleAction(String action) {
     ping();
   else if(action.substring(0, 5) == ACTION_SPEED) {
     String speedStr = action.substring(6, action.length());
-    speed = speedStr.toInt(); 
+    speed = speedStr.toInt();
   }
 }
 
@@ -171,7 +167,7 @@ void handleCollision() {
 void handleLinedDetected() {
   stopRobot();
   Serial.println(LINE_DETECTED_MESSAGE);
-  if(!DEBUG_MODE) 
+  if(!DEBUG_MODE)
     running = false;
 }
 
@@ -184,30 +180,30 @@ void setup() {
   pinMode(BACK_LEFT, OUTPUT);
   pinMode(BACK_RIGHT, OUTPUT);
   pinMode(LED, OUTPUT);
-  pinMode(LINE_SENSOR_1, INPUT);   
+  pinMode(LINE_SENSOR_1, INPUT);
   pinMode(LINE_SENSOR_2, INPUT);
-  pinMode(LINE_SENSOR_3, INPUT);      
+  pinMode(LINE_SENSOR_3, INPUT);
 }
 
-void loop() {  
+void loop() {
   String action = readActionFromSerial();
-  
+
   if(!running) {
     if(action == ACTION_RESET)
-      reset();  
-    else 
-      return;    
+      reset();
+    else
+      return;
   }
-  handleAction(action);  
-  
+  handleAction(action);
+
   int tmpDistance = (int)getDistance();
-  //Only send changes in distance 
-  if(tmpDistance != distance && tmpDistance > 0) { 
+  //Only send changes in distance
+  if(tmpDistance != distance && tmpDistance > 0) {
     distance = tmpDistance;
     Serial.println(distance);
     if(distance < MINIMUM_DISTANCE)
       handleCollision();
-  }   
+  }
 
   if(lineDetected()) {
     handleLinedDetected();
